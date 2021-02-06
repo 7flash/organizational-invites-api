@@ -1,11 +1,58 @@
 const fastify = require('fastify')({ logger: true })
+const assert = require('assert')
 
 const findSponsor = require('./findSponsor')
 const { generateInvite } = require('./generateInvite')
 const generateLink = require('./generateLink')
 const eosClient = require('./eosClient')
+const findAccountByPhone = require('./findAccountByPhone')
+const encodeTransaction = require('./encodeTransaction')
+const sendNotification = require('./sendNotification')
+const checkAccountExists = require('./checkAccountExists')
 
 const defaultSowQuantity = "5.0000 SEEDS"
+
+fastify.post('/send_invoice', async (request, response) => {
+    try {
+        if (request.body.bill_to_account) {
+            assert(checkAccountExists(request.body.bill_to_account), `value of bill_to_account is expected to be an existing account name, but provided value is ${request.body.bill_to_account}`)
+        }
+        if (request.body.bill_to_phone) {
+            assert(!request.body.bill_to_account, `exclusively bill_to_account or bill_to_phone are expected, but both values are provided`)
+            assert(findAccountByPhone(request.body.bill_to_phone), `value of bill_to_phone is expected to be a phone number associated with existing account, but provided value is ${request.body.bill_to_phone}`)
+        }
+
+        assert(request.body.recipient, `value of recipient field is expected to be a valid account name, but empty value provided`)
+        assert(checkAccountExists(request.body.recipient), `value of recipient field is expected to be an existing account name, but provided value is ${request.body.recipient}`)
+        
+        assert(parseFloat(request.body.total) > 0, `value of total field is expected to be a valid number, but provided value is ${request.body.total}`)
+        
+        assert(request.body.callback_url.startsWith('https://'), `value of callback_url field is expected to be valid https url, but provided value is ${request.body.callback_url}`)
+
+        var from = request.body.bill_to_phone ? findAccountByPhone(request.body.bill_to_phone) : request.body.bill_to_account;
+        var to = request.body.recipient
+        var memo = request.body.memo || ""
+        var quantity = parseFloat(request.body.total).toFixed(4) + " SEEDS";
+
+        var callbackUrl = request.body.callback_url;
+
+        const esr = await encodeTransaction({
+            from, to, quantity, memo, callbackUrl
+        })
+
+        sendNotification(from, esr)
+
+        return {
+            ok: true,
+            result: esr
+        }
+    } catch (err) {
+        return {
+            ok: false,
+            error: err.toString()
+        }
+    }
+})
 
 fastify.get('/', async (request, response) => {
     const { apiKey, amount } = request.query

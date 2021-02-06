@@ -15,7 +15,8 @@
     "eosjs-ecc": "^4.0.7",
     "fastify": "^3.11.0",
     "node-fetch": "^2.6.1",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "eosio-signing-request": "^1.2.0"
   },
   "devDependencies": {
     "riteway": "^6.2.1"
