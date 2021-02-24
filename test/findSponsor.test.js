@@ -1,6 +1,6 @@
 const { describe } = require('riteway')
 
-const findSponsor = require('./findSponsor')
+const findSponsor = require('../src/findSponsor')
 
 describe('Find Sponsor', async assert => {
     const apiKey = "apikey1"

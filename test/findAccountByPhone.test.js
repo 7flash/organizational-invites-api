@@ -1,5 +1,5 @@
 const { describe } = require('riteway')
-const findAccountByPhone = require('./findAccountByPhone')
+const findAccountByPhone = require('../src/findAccountByPhone')
 
 describe('Find account by phone', async assert => {
     assert({
