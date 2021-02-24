@@ -1,5 +1,5 @@
 const { describe } = require('riteway')
-const encodeTransaction = require('./encodeTransaction')
+const encodeTransaction = require('../src/encodeTransaction')
 
 describe('encode transaction', async assert => {
     const result = await encodeTransaction({

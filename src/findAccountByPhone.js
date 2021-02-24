@@ -1,4 +1,4 @@
-const accounts = require('./accounts.json')
+const accounts = require('../data/accounts.json')
 
 const findAccountByPhone = phoneNumber => accounts[phoneNumber]
 

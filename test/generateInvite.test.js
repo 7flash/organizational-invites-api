@@ -1,6 +1,6 @@
 const { describe } = require('riteway')
 
-const { generateInvite, generateSecret, generateHash } = require('./generateInvite')
+const { generateInvite, generateSecret, generateHash } = require('../src/generateInvite')
 
 describe('Generate Invite', async assert => {
     const mockPrivateKey = "5KZDYP3Xh4cWHR3zb1xZqMGbKnojmPe3p2EHnU7RLW4fnNaktgH"

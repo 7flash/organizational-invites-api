@@ -1,5 +1,5 @@
 const { describe } = require('riteway')
-const sendNotification = require('./sendNotification')
+const sendNotification = require('../src/sendNotification')
 
 describe('Send notification', async assert => {
     assert({

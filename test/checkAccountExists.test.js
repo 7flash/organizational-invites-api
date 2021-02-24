@@ -1,5 +1,5 @@
 const { describe } = require('riteway')
-const checkAccountExists = require('./checkAccountExists')
+const checkAccountExists = require('../src/checkAccountExists')
 
 describe('Check account exists', async assert => {
     assert({

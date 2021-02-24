@@ -1,6 +1,6 @@
 const { describe } = require('riteway')
 
-const generateLink = require('./generateLink')
+const generateLink = require('../src/generateLink')
 
 describe('Generate Link', async assert => {
     const mockSecret = '354b5a4459503358683463574852337a6231785a714d47624b6e6f6a6d506533'
