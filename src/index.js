@@ -12,6 +12,30 @@ const checkAccountExists = require('./checkAccountExists')
 
 const defaultSowQuantity = "5.0000 SEEDS"
 
+/**
+ * TODO Invoice format to send to backend is this
+ {
+    "apiKey":"xxx",
+    "invoice":{
+        "memo":"1",
+        "amount":"700.0000 SEEDS",
+        "recipient":"testingseed3",
+        "items":[
+            {
+                "name":"faux fur",
+                "quantity":1,
+                "pricePerItem":"50.0000 SEEDS"
+            }
+        ]
+    },
+    "user":"illumination"
+    // OR 
+    // Either target user or target phone number must be defined
+    "phoneNumber":"+14155555555"
+}
+Then all that needs to be sent off to firebase, which handles all the arror cases and sends the push notifications
+
+ */
 fastify.post('/send_invoice', async (request, response) => {
     try {
         if (request.body.bill_to_account) {
