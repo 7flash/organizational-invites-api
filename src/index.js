@@ -54,7 +54,7 @@ fastify.post('/send_invoice', async (request, response) => {
     }
 })
 
-fastify.get('/', async (request, response) => {
+fastify.get('/invite', async (request, response) => {
     const { apiKey, amount } = request.query
 
     const sponsor = findSponsor(apiKey)
