@@ -2,12 +2,21 @@
 
 ## Installation
 
-[TBD]
+```
+gh repo clone JoinSEEDS/organizational-invites-api
+npm install
+```
 
 ## usage
 
-[TBD]
+1) Copy & Edit .env file
+2) Run main process in background
+```
+pm2 start --name org-invites-api src/index.js
+```
 
 ## How to run the unit tests
 
-[TBD]
+```
+npx riteway test/*.test.js
+```
