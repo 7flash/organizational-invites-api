@@ -1,5 +1,6 @@
 const fastify = require('fastify')({ logger: true })
 const assert = require('assert')
+const fetch = require('node-fetch')
 
 const findSponsor = require('./findSponsor')
 const { generateInvite } = require('./generateInvite')
@@ -11,6 +12,24 @@ const sendNotification = require('./sendNotification')
 const checkAccountExists = require('./checkAccountExists')
 
 const defaultSowQuantity = "5.0000 SEEDS"
+
+const fs = require('fs')
+
+
+var apiKeys
+
+fs.readFile('apiKeys.json', 'utf8' , (err, data) => {
+  if (err) {
+    console.error(err)
+    return
+  }
+  console.log("api file: ",data)
+  const json = JSON.parse(data)
+  apiKeys = json.map( (e) => e.key)
+
+  console.log("api keys ", apiKeys)
+})
+
 
 /**
  * TODO Invoice format to send to backend is this
@@ -34,47 +53,61 @@ const defaultSowQuantity = "5.0000 SEEDS"
     "phoneNumber":"+14155555555"
 }
 Then all that needs to be sent off to firebase, which handles all the arror cases and sends the push notifications
-
  */
+
+const checkApiKey = (key) => {
+    console.log("check api keys ", apiKeys, " vs ", key)
+    return apiKeys.includes(key)
+}
+
 fastify.post('/send_invoice', async (request, response) => {
     try {
-        if (request.body.bill_to_account) {
-            assert(checkAccountExists(request.body.bill_to_account), `value of bill_to_account is expected to be an existing account name, but provided value is ${request.body.bill_to_account}`)
-        }
-        if (request.body.bill_to_phone) {
-            assert(!request.body.bill_to_account, `exclusively bill_to_account or bill_to_phone are expected, but both values are provided`)
-            assert(findAccountByPhone(request.body.bill_to_phone), `value of bill_to_phone is expected to be a phone number associated with existing account, but provided value is ${request.body.bill_to_phone}`)
-        }
-
-        assert(request.body.recipient, `value of recipient field is expected to be a valid account name, but empty value provided`)
-        assert(checkAccountExists(request.body.recipient), `value of recipient field is expected to be an existing account name, but provided value is ${request.body.recipient}`)
+        const { INVOICE_URL, FIREBASE_API_KEY } = process.env
         
-        assert(parseFloat(request.body.total) > 0, `value of total field is expected to be a valid number, but provided value is ${request.body.total}`)
-        
-        assert(request.body.callback_url.startsWith('https://'), `value of callback_url field is expected to be valid https url, but provided value is ${request.body.callback_url}`)
+        if (!checkApiKey(request.body.apiKey)) {
+            console.log("bad API key")
+            response.code(400)
+            return {
+                ok: false,
+                error: "invalid API key"
+            }
+        }
 
-        var from = request.body.bill_to_phone ? findAccountByPhone(request.body.bill_to_phone) : request.body.bill_to_account;
-        var to = request.body.recipient
-        var memo = request.body.memo || ""
-        var quantity = parseFloat(request.body.total).toFixed(4) + " SEEDS";
+        var body = {
+            apiKey: FIREBASE_API_KEY,
+            invoice: request.body.invoice,
+        }
+        if (request.body.phoneNumber) {
+            body.phoneNumber = request.body.phoneNumber
+        } else if (request.body.user) {
+            body.user = request.body.user
+        }
 
-        var callbackUrl = request.body.callback_url;
+        console.log("posting "+JSON.stringify(body))
 
-        const esr = await encodeTransaction({
-            from, to, quantity, memo, callbackUrl
+        const res = await fetch(INVOICE_URL, {
+            method: 'post',
+            body:    JSON.stringify(body),
+            headers: { 'Content-Type': 'application/json' },
         })
+        
+        const resJson = await res.json()
 
-        sendNotification(from, esr)
-
-        return {
-            ok: true,
-            result: esr
+        if (res.status == 200) {
+            console.log("result: ", resJson)
+        } else {
+            console.error("error: "+JSON.stringify(payload, null, 2))
+            console.error("error response: "+JSON.stringify(res, null, 2))
         }
+
+        return resJson
     } catch (err) {
-        return {
-            ok: false,
-            error: err.toString()
-        }
+        response
+            .code(400)
+            .send({
+                ok: false,
+                error: err.toString()
+            })
     }
 })
 
